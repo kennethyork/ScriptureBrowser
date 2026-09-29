@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Scripture Browser
+GenericName=Web Browser
+Comment=A browser that opens the sites on its list, and nothing else
+Exec=/usr/local/bin/scripture-browser %u
+TryExec=/usr/local/bin/scripture-browser
+Icon=__PREFIX__/icon.svg
+Terminal=false
+StartupNotify=true
+# The window class Firefox sets is its RemotingName, which build.py sets to
+# scripture-browser in the clone's application.ini.
+StartupWMClass=scripture-browser
+Categories=Network;WebBrowser;Security;
+Keywords=Bible;Scripture;Study;KJV;Devotion;
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;

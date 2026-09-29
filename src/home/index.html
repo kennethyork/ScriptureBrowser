@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>__NAME__</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- This page is a file on this machine.  It makes no network requests, loads no
+     fonts and no scripts from anywhere, and keeps nothing but a ✓ or two in
+     localStorage.  The verse, the catechism, the challenges and the church's
+     year are imported from StudyTools by tools/import-studytools.py. -->
+<style>
+  :root {
+    --ink:      #ece3d4;
+    --ink-dim:  #9c9083;
+    --ink-faint:#6c6255;
+    --paper:    #12100e;
+    --card:     #1b1815;
+    --line:     #2c2721;
+    --gold:     #c9a45c;
+    --gold-dim: #8a7340;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.6 "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+          Georgia, "Times New Roman", serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  /* ---- head ---------------------------------------------------------- */
+  header { display: flex; align-items: baseline; justify-content: space-between;
+           gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 1.25rem; }
+  .wordmark { font-size: 1.5rem; letter-spacing: .16em; text-transform: uppercase;
+              color: var(--gold); margin: 0; font-weight: 400; }
+  .wordmark small { display: block; letter-spacing: .06em; text-transform: none;
+                    font-size: .75rem; color: var(--ink-faint); margin-top: .35rem; }
+  .now { text-align: right; color: var(--ink-dim); font-size: .9rem; line-height: 1.5; }
+  .now .time { font-size: 1.6rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .now .feast { color: var(--gold); }
+
+  /* ---- the verse ----------------------------------------------------- */
+  .verse { margin: 2.75rem 0 2rem; }
+  .label { font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
+           color: var(--ink-faint); margin-bottom: 1rem; }
+  .verse blockquote { margin: 0; font-size: 1.65rem; line-height: 1.55; }
+  .verse cite { display: block; margin-top: 1rem; font-style: normal;
+                color: var(--gold); letter-spacing: .08em; font-size: .95rem; }
+  .toolbar { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+
+  .btn { background: none; border: 1px solid var(--line); color: var(--ink-dim);
+         font: inherit; font-size: .82rem; padding: .4rem .85rem; border-radius: 2px;
+         cursor: pointer; text-decoration: none; }
+  .btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .btn:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
+  .btn.done { border-color: var(--gold-dim); color: var(--gold); }
+  .key { display: inline-block; margin-left: .45em; padding: 0 .3em;
+         border: 1px solid var(--line); border-radius: 2px; color: var(--ink-faint);
+         font-size: .68rem; line-height: 1.5; vertical-align: .08em; }
+
+  /* memory mode: the words are the blanks */
+  .blank { color: transparent; background: var(--card);
+           border-bottom: 1px solid var(--line); border-radius: 2px;
+           cursor: pointer; padding: 0 .18em; }
+  .blank.shown { color: var(--ink); background: none; border-bottom-color: transparent; }
+  .blank:focus-visible { outline: 1px solid var(--gold); }
+
+  /* ---- the question, and the day ------------------------------------- */
+  .twoup { display: grid; gap: 1.5rem; grid-template-columns: 1fr 1fr;
+           margin: 0 0 2.5rem; }
+  @media (max-width: 46rem) { .twoup { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 3px;
+          padding: 1.25rem 1.4rem; }
+  .card h3 { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase;
+             color: var(--ink-faint); font-weight: 400; margin: 0 0 .9rem; }
+  .card .who { color: var(--gold-dim); font-size: .8rem; letter-spacing: .04em; }
+  .card .q { font-size: 1.05rem; margin: .35rem 0 .8rem; }
+  .card .a { color: var(--ink-dim); font-size: .95rem; border-left: 2px solid var(--line);
+             padding-left: .9rem; margin: 0 0 .8rem; }
+  .card .a.hidden { display: none; }
+  .card li { color: var(--ink-dim); font-size: .95rem; }
+  .card a { color: var(--gold-dim); text-decoration: none; }
+  .card a:hover { color: var(--gold); }
+  .challenge { font-size: 1.05rem; margin: .35rem 0 .5rem; }
+  .challenge-title { color: var(--gold); letter-spacing: .04em; font-size: .85rem;
+                     text-transform: uppercase; }
+  .pray { display: flex; flex-wrap: wrap; gap: .5rem 1.1rem; margin-top: 1rem;
+          padding-top: .9rem; border-top: 1px solid var(--line); font-size: .85rem; }
+  .pray a { color: var(--ink-dim); text-decoration: none; }
+  .pray a:hover { color: var(--gold); }
+
+  /* ---- search -------------------------------------------------------- */
+  form.search { display: flex; gap: .5rem; margin: 0 0 3rem; }
+  form.search input[type=search] {
+    flex: 1; background: var(--card); border: 1px solid var(--line);
+    color: var(--ink); font: inherit; font-size: 1rem; padding: .7rem .9rem;
+    border-radius: 2px; min-width: 0;
+  }
+  form.search input[type=search]::placeholder { color: var(--ink-faint); }
+  form.search input[type=search]:focus { outline: none; border-color: var(--gold-dim); }
+  form.search button { background: var(--card); border: 1px solid var(--line);
+    color: var(--ink-dim); font: inherit; font-size: .9rem; padding: .7rem 1.1rem;
+    border-radius: 2px; cursor: pointer; }
+  form.search button:hover { color: var(--gold); border-color: var(--gold-dim); }
+
+  /* ---- the sites ----------------------------------------------------- */
+  .group { margin-bottom: 2.25rem; }
+  .group h2 { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase;
+              color: var(--ink-faint); font-weight: 400; margin: 0 0 .9rem;
+              border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+  .sites { display: grid; gap: .4rem;
+           grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+  a.site { display: block; padding: .6rem .75rem; border: 1px solid transparent;
+           border-radius: 2px; text-decoration: none; color: var(--ink);
+           line-height: 1.3; }
+  a.site:hover { background: var(--card); border-color: var(--line); }
+  a.site .site-name { display: block; font-size: .95rem; }
+  a.site .site-host { display: block; font-size: .72rem; color: var(--ink-faint);
+                      margin-top: .2rem; word-break: break-all; }
+
+  /* ---- foot ---------------------------------------------------------- */
+  footer { border-top: 1px solid var(--line); margin-top: 3rem; padding-top: 1.25rem;
+           color: var(--ink-faint); font-size: .8rem; line-height: 1.8; }
+  footer code { color: var(--ink-dim); font-family: ui-monospace, "DejaVu Sans Mono",
+                Menlo, Consolas, monospace; font-size: .78rem; }
+  footer .k { color: var(--gold-dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1 class="wordmark">Scripture<small>__NAME__ __VERSION__</small></h1>
+    <div class="now">
+      <div class="time" id="clock">&nbsp;</div>
+      <div id="today">&nbsp;</div>
+      <div class="feast" id="feast"></div>
+    </div>
+  </header>
+
+  <section class="verse">
+    <div class="label" id="verse-label">The verse for today</div>
+    <blockquote id="verse-text">…</blockquote>
+    <cite id="verse-ref"></cite>
+    <div class="toolbar">
+      <button class="btn" id="another" type="button">Another verse<span class="key">n</span></button>
+      <button class="btn" id="memory" type="button">Memorise it<span class="key">m</span></button>
+      <a class="btn" id="read" href="#" rel="noreferrer">Read the chapter</a>
+      <button class="btn" id="learnt" type="button">I have it ✓</button>
+    </div>
+  </section>
+
+  <div class="twoup">
+    <section class="card" id="catechism-card">
+      <h3>The question for today</h3>
+      <div class="who" id="cat-name"></div>
+      <div class="q" id="cat-q"></div>
+      <p class="a hidden" id="cat-a"></p>
+      <div class="toolbar">
+        <button class="btn" id="cat-show" type="button">Show the answer<span class="key">a</span></button>
+        <button class="btn" id="cat-next" type="button">Another question<span class="key">q</span></button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Asked of you today</h3>
+      <div class="challenge-title" id="challenge-title"></div>
+      <div class="challenge" id="challenge-text"></div>
+      <div class="pray">
+        <a href="https://lectionarypage.net/" rel="noreferrer">Today's readings</a>
+        <a href="https://www.commonprayer.net/" rel="noreferrer">Morning prayer</a>
+        <a href="https://www.missionstclare.com/" rel="noreferrer">The Daily Office</a>
+        <a href="https://universalis.com/" rel="noreferrer">The Hours</a>
+      </div>
+    </section>
+  </div>
+
+  <form class="search" id="search" role="search">
+    <input type="search" id="q" placeholder="Search the Scriptures…" autocomplete="off"
+           spellcheck="false" aria-label="Search">
+    <button type="submit">Search</button>
+  </form>
+
+  <main id="links">
+__LINKS__
+  </main>
+
+  <footer>
+    <div>Every link above is a line in <code>__PREFIX__/allowlist.txt</code>. Nothing else
+      will open: not encyclopaedias, not video, not shops. To add a site:
+      <code>sudo scripture-browser --add example.com</code></div>
+    <div><span class="k">Learnt</span> <span id="learnt-count">0</span> verses on this machine.
+      <span class="k">Built</span> __BUILT__.
+      <span class="k">Keys</span> <code>/</code> search, <code>n</code> verse, <code>m</code> memorise,
+      <code>a</code> answer, <code>q</code> question.</div>
+    <div>Verse (World English Bible, public domain), catechism, challenges and the
+      church's year from
+      <a href="https://studytools.cc/" style="color:#8a7340;text-decoration:none">studytools.cc</a>.
+      This page is a file on this computer. It asks the network for nothing.</div>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+
+const VERSES     = __VERSES__;
+const CATECHISM  = __CATECHISM__;
+const CHALLENGES = __CHALLENGES__;
+const FEASTS     = __FEASTS__;
+const SEARCH     = __SEARCH__;
+const STORE      = "scripture-browser.learnt.v1";
+
+/* ---------------------------------------------------------------- the day -- */
+const DAY = Math.floor(Date.now() / 86400000);          // days since the epoch
+const now = new Date();
+
+function tick() {
+  const t = new Date();
+  document.getElementById("clock").textContent =
+    t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  document.getElementById("today").textContent =
+    t.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" });
+}
+
+/* Easter, by the computus — the one date the church's year is measured from. */
+function easter(year) {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+/* Which day of the church's year is today, from the list StudyTools keeps:
+   the fixed dates by month and day, the movable ones by their distance from
+   Easter.  Nothing is invented here — if the list has nothing, nothing shows. */
+function churchDay(when) {
+  const key = String(when.getMonth() + 1).padStart(2, "0") + "-" +
+              String(when.getDate()).padStart(2, "0");
+  const fixed = (FEASTS && FEASTS.fixed) || {};
+  if (fixed[key]) return fixed[key];
+
+  const movable = (FEASTS && FEASTS.movable) || [];
+  const thisYear = easter(when.getFullYear());
+  const days = Math.round((when - thisYear) / 86400000);
+  const fromThisYear = movable.filter((f) => f.o === days);
+  if (fromThisYear.length) return fromThisYear[0].n;
+
+  // A day either side of the year boundary: Easter's offsets can reach back into
+  // the previous December and forward into the next.
+  const lastYear = easter(when.getFullYear() - 1);
+  const back = movable.filter((f) => f.o === days + 365);
+  if (back.length) return back[0].n;
+  const nextYear = easter(when.getFullYear() + 1);
+  const forward = movable.filter((f) => f.o === days - 365);
+  return forward.length ? forward[0].n : "";
+}
+
+/* -------------------------------------------------------------- the verse -- */
+function loadLearnt() {
+  try { return new Set(JSON.parse(localStorage.getItem(STORE) || "[]")); }
+  catch (e) { return new Set(); }
+}
+function saveLearnt(set) {
+  try { localStorage.setItem(STORE, JSON.stringify([...set])); } catch (e) {}
+}
+let learnt = loadLearnt();
+let index = DAY % VERSES.length;
+let remembering = false;
+
+function passageUrl(verse) {
+  return "https://www.biblegateway.com/passage/?search=" +
+         encodeURIComponent(verse.ref) + "&version=KJV";
+}
+
+function drawVerse() {
+  const verse = VERSES[index];
+  const label = document.getElementById("verse-label");
+  const text  = document.getElementById("verse-text");
+
+  label.textContent = (index === DAY % VERSES.length)
+    ? "The verse for today"
+    : "Verse " + (index + 1) + " of " + VERSES.length;
+
+  text.textContent = "";
+  if (remembering) {
+    verse.text.split(/\s+/).forEach((word, i) => {
+      if (i) text.appendChild(document.createTextNode(" "));
+      const span = document.createElement("span");
+      span.className = "blank";
+      span.tabIndex = 0;
+      span.textContent = word;
+      span.addEventListener("click", () => span.classList.add("shown"));
+      span.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); span.classList.add("shown"); }
+      });
+      text.appendChild(span);
+    });
+  } else {
+    text.textContent = verse.text;
+  }
+
+  // No translation is claimed here: the text comes from StudyTools, and saying
+  // KJV over it would be a guess.  The credit in the footer is the honest one.
+  document.getElementById("verse-ref").textContent = verse.ref + " · WEB";
+  document.getElementById("read").href = passageUrl(verse);
+
+  const done = learnt.has(verse.ref);
+  const mark = document.getElementById("learnt");
+  mark.classList.toggle("done", done);
+  mark.textContent = done ? "Learnt ✓" : "I have it ✓";
+  document.getElementById("memory").classList.toggle("done", remembering);
+  document.getElementById("learnt-count").textContent = learnt.size;
+}
+
+/* ---------------------------------------------------------- the question -- */
+const CAT_NAMES = Object.keys(CATECHISM);
+
+function catItems(which) {
+  const name = CAT_NAMES[which];
+  return (name && CATECHISM[name] && CATECHISM[name].items) || [];
+}
+
+// The day chooses which catechism and which question, so it is the day's
+// question rather than the first one over and over.
+let catWhich = CAT_NAMES.length ? DAY % CAT_NAMES.length : 0;
+let catIndex = catItems(catWhich).length ? DAY % catItems(catWhich).length : 0;
+let catOpen = false;
+
+function drawQuestion() {
+  if (!CAT_NAMES.length) return;
+  const cat = CATECHISM[CAT_NAMES[catWhich]];
+  const items = catItems(catWhich);
+  if (!items.length) return;
+  const item = items[catIndex % items.length];
+
+  document.getElementById("cat-name").textContent =
+    cat.title + " · " + ((catIndex % items.length) + 1) + " of " + items.length;
+  document.getElementById("cat-q").textContent = item.q;
+
+  const answer = document.getElementById("cat-a");
+  answer.textContent = item.a;
+  answer.classList.toggle("hidden", !catOpen);
+  const show = document.getElementById("cat-show");
+  show.textContent = catOpen ? "Hide the answer" : "Show the answer";
+  show.classList.toggle("done", catOpen);
+}
+
+/* ------------------------------------------------------------- the asking -- */
+function drawChallenge() {
+  if (!CHALLENGES.length) return;
+  const c = CHALLENGES[DAY % CHALLENGES.length];
+  document.getElementById("challenge-title").textContent = c.title;
+  document.getElementById("challenge-text").textContent = c.text;
+}
+
+/* ------------------------------------------------------------------ wires -- */
+document.getElementById("another").addEventListener("click", () => {
+  index = (index + 1) % VERSES.length; remembering = false; drawVerse();
+});
+document.getElementById("memory").addEventListener("click", () => {
+  remembering = !remembering; drawVerse();
+});
+document.getElementById("learnt").addEventListener("click", () => {
+  const ref = VERSES[index].ref;
+  if (learnt.has(ref)) learnt.delete(ref); else learnt.add(ref);
+  saveLearnt(learnt); drawVerse();
+});
+document.getElementById("cat-show").addEventListener("click", () => {
+  catOpen = !catOpen; drawQuestion();
+});
+document.getElementById("cat-next").addEventListener("click", () => {
+  catIndex += 1;
+  if (catIndex >= catItems(catWhich).length) {
+    catWhich = (catWhich + 1) % CAT_NAMES.length;      // Westminster, then Heidelberg
+    catIndex = 0;
+  }
+  catOpen = false; drawQuestion();
+});
+document.getElementById("search").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const query = document.getElementById("q").value.trim();
+  if (!query) return;
+  location.href = SEARCH.url.replace("{q}", encodeURIComponent(query));
+});
+
+document.addEventListener("keydown", (event) => {
+  const active = document.activeElement || document.body;
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
+  if (event.key === "/" && !typing) {
+    event.preventDefault(); document.getElementById("q").focus(); return;
+  }
+  if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.key === "n") { index = (index + 1) % VERSES.length; remembering = false; drawVerse(); }
+  if (event.key === "m") { remembering = !remembering; drawVerse(); }
+  if (event.key === "a") { catOpen = !catOpen; drawQuestion(); }
+  if (event.key === "q") { document.getElementById("cat-next").click(); }
+});
+
+/* ------------------------------------------------------------------- go ---- */
+tick();
+setInterval(tick, 20000);
+document.getElementById("feast").textContent = churchDay(now);
+drawVerse();
+drawQuestion();
+drawChallenge();
+</script>
+</body>
+</html>

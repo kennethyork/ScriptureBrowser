@@ -1,0 +1,22 @@
+[Unit]
+Description=Scripture Browser — notice the moment a lock is touched
+Documentation=file:__PREFIX__/README.md
+
+[Path]
+# Each of these is enough on its own to wake the guard.  They are the four files
+# that live inside the clone, the filter's copy of the list, and the launcher —
+# everything the guard is responsible for that is small enough to be worth
+# watching individually.  __PREFIX__ as a whole is watched too, which catches a
+# file being added or removed rather than edited.
+PathModified=__PREFIX__/lib/firefox/distribution/policies.json
+PathModified=__PREFIX__/lib/firefox/scripture-browser.cfg
+PathModified=__PREFIX__/lib/firefox/defaults/pref/autoconfig.js
+PathModified=__PREFIX__/lib/firefox/application.ini
+PathModified=__PREFIX__/filter/hosts.txt
+PathModified=/usr/local/bin/scripture-browser
+PathModified=__PREFIX__
+
+Unit=scripture-browser-guard.service
+
+[Install]
+WantedBy=paths.target

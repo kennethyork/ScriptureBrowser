@@ -1,0 +1,28 @@
+[Unit]
+Description=Scripture Browser — the filter (allow-list proxy)
+Documentation=file:__PREFIX__/README.md
+After=network.target
+ConditionPathExists=__PREFIX__/filter/hosts.txt
+ConditionPathExists=__PREFIX__/filter/filter.py
+
+[Service]
+Type=simple
+ExecStart=__PREFIX__/filter/filter.py --hosts __PREFIX__/filter/hosts.txt --bind 127.0.0.1 --port 8791
+Restart=always
+RestartSec=2
+
+# It holds one socket and reads one file.
+DynamicUser=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=yes
+ReadOnlyPaths=__PREFIX__/filter
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,125 @@
+# ============================================================================
+#  Scripture Browser — the sites this browser is allowed to open.
+# ============================================================================
+#
+#  WHAT THIS IS
+#
+#  A list of what serves the reading of Scripture, the study of it, the worship
+#  of God, and the ordinary Christian life.  Nothing else belongs on it.
+#
+#  WHAT IS NOT ON IT, ON PURPOSE
+#
+#  General-purpose sites.  Encyclopaedias, dictionaries, news, search engines —
+#  useful, but they are the opposite of a room built for one thing.  A browser
+#  that can reach everything is not centred on anything.
+#
+#  Places that host everything.  Free libraries, video sites, social media,
+#  shops, forums.  A site is allowed *whole* here — every page of it — so a site
+#  that hosts everything is a site that allows everything.
+#
+#  If you add one of those back, build.py will say so out loud, and
+#  `scripture-browser --add` will refuse it.  That is a nudge, not a rule: this
+#  is your list, and editing this file by hand always works.
+#
+#  HOW TO WRITE A LINE
+#
+#     biblegateway.com # Bible Gateway        <- a site, and its name
+#     biblegateway.com                        <- a site, no name
+#     ## Scripture                            <- a heading, groups the lines
+#     # a comment
+#
+#  One domain per line.  No http://, no paths, no trailing slash — just the host.
+#  A bare domain allows that host and its "www." twin; a subdomain that matters on
+#  its own (my.example.com) needs its own line.  Removing a line removes the site
+#  from the browser, the start page and the filter at once:
+#
+#      sudo scripture-browser --update
+#
+# ============================================================================
+
+
+## Scripture — the text itself
+
+biblegateway.com            # Bible Gateway — read and search 60+ translations
+bible.com                   # YouVersion — Bible, reading plans, offline text
+biblehub.com                # Bible Hub — interlinear, lexicons, commentaries
+blueletterbible.org         # Blue Letter Bible — word studies and concordances
+biblestudytools.com         # Bible Study Tools
+stepbible.org               # STEP Bible — original-language study
+biblearc.com                # BibleArc — arcing, phrasing, discourse
+netbible.org                # NET Bible — with the translator's notes
+esv.org                     # ESV Bible
+biblia.com                  # Biblia — Lexham and Logos texts
+ebible.org                  # eBible.org — public-domain translations, 1000+ languages
+
+
+## Study tools
+
+studytools.cc               # StudyTools — originals, commentary, catechism, notes
+
+
+## Read — the classics of Christian devotion, free and out of copyright
+
+ccel.org                    # Christian Classics Ethereal Library
+chapellibrary.org           # Chapel Library — free Puritan and Reformed works
+monergism.com               # Monergism — books, articles, audio
+gracegems.org               # Grace Gems — Bunyan, Owen, Spurgeon, Ryle
+hymnary.org                 # Hymnary — a million hymn texts and tunes
+hymnal.net                  # Hymnal.net — hymns with words and music
+
+
+## Prayer and the church's year
+
+bookofcommonprayer.net      # The Book of Common Prayer
+commonprayer.net            # Daily prayer, morning and evening
+missionstclare.com          # The Daily Office
+lectionarypage.net          # The Lectionary Page — the readings for today
+universalis.com             # Universalis — the Liturgy of the Hours
+divineoffice.org            # Divine Office
+
+
+## Teaching and preaching
+
+desiringgod.org             # Desiring God — John Piper
+ligonier.org                # Ligonier — R.C. Sproul
+gty.org                     # Grace to You — John MacArthur
+thegospelcoalition.org      # The Gospel Coalition
+gotquestions.org            # Got Questions
+bibleproject.com            # BibleProject — videos and study notes
+crossway.org                # Crossway — the ESV, articles
+9marks.org                  # 9Marks — church health
+answersingenesis.org        # Answers in Genesis
+carm.org                    # CARM — Christian Apologetics and Research Ministry
+
+
+## The traditions — keep the ones you want, delete the rest
+
+vatican.va                  # The Holy See
+usccb.org                   # US Conference of Catholic Bishops
+catholic.com                # Catholic Answers
+newadvent.org               # New Advent — Aquinas, the Fathers, the encyclopedia
+ewtn.com                    # EWTN
+oca.org                     # Orthodox Church in America
+goarch.org                  # Greek Orthodox Archdiocese of America
+ancientfaith.com            # Ancient Faith Radio
+opc.org                     # Orthodox Presbyterian Church
+lcms.org                    # Lutheran Church — Missouri Synod
+umc.org                     # United Methodist Church
+churchofengland.org         # The Church of England
+anglicanchurch.net          # The Anglican Church in North America
+pcusa.org                   # Presbyterian Church (U.S.A.)
+sbc.net                     # Southern Baptist Convention
+
+
+## Browser plumbing — leave these alone
+
+# Not places to visit: these carry Firefox's own protection data — the Safe
+# Browsing lists, the blocklists behind tracking protection, and the signatures
+# that make them trustworthy.  They are kept off the start page and out of the
+# bookmark bar by build.py, which reads this very heading.
+#
+# Firefox updates are not here.  A clone never updates itself; the package
+# manager patches the machine's Firefox and the clone is re-vendored from it.
+firefox.settings.services.mozilla.com        # Remote settings — blocklists, safe browsing
+firefox-settings-attachments.cdn.mozilla.net # the attachments those settings point at
+content-signature-2.cdn.mozilla.net          # the signatures over them

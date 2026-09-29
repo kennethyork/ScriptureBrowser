@@ -1,0 +1,148 @@
+#!/bin/sh
+# Scripture Browser — the launcher, and the way you change the list.
+#
+#   scripture-browser                 open it
+#   scripture-browser --kiosk         open it full screen, with no window furniture
+#   scripture-browser --list          what is on the list
+#   scripture-browser --check URL     would the filter let this through?
+#   scripture-browser --add DOMAIN    add a site (asks for your password)
+#   scripture-browser --remove DOMAIN take one off
+#   scripture-browser --update        rebuild and re-install after editing
+#   scripture-browser --sync          re-vendor the clone after a Firefox update
+#   scripture-browser --status        guard, filter, clone: what state is it in?
+#   scripture-browser --install-user  make it this account's default browser
+#   scripture-browser --serve on|off  serve the start page on loopback instead of file://
+#   scripture-browser --release       the way out: remove the clone and the locks
+
+set -eu
+
+PREFIX=${SCRIPTURE_PREFIX:-/opt/scripture-browser}
+GUARD=${SCRIPTURE_GUARD:-/usr/local/lib/scripture-browser-guard/guard.sh}
+PROFILE=${SCRIPTURE_PROFILE:-${XDG_DATA_HOME:-$HOME/.local/share}/scripture-browser/profile}
+BROWSER=${SCRIPTURE_BROWSER:-$PREFIX/lib/firefox/firefox}
+CONFIG=${SCRIPTURE_CONFIG:-$PREFIX/config.json}
+
+say()  { printf '%s\n' "$*"; }
+die()  { printf '%s: %s\n' "${0##*/}" "$*" >&2; exit 1; }
+as_root() { [ "$(id -u)" -eq 0 ] || exec sudo -- "$0" "$@"; }
+value() { python3 -c "import json,sys;print(json.load(open(sys.argv[1]))$1)" "$CONFIG" 2>/dev/null || true; }
+
+[ -d "$PREFIX" ] || die "not installed: $PREFIX is missing"
+
+# The start page, as this machine was actually installed: written by install.sh,
+# which is the only thing that knows whether it is a local file or the loopback
+# server.  The fallback is what a plain install would have used anyway.
+HOME_URL=${SCRIPTURE_HOME_URL:-}
+[ -n "$HOME_URL" ] || HOME_URL=$(cat "$PREFIX/HOME" 2>/dev/null || true)
+[ -n "$HOME_URL" ] || HOME_URL="file://$PREFIX/home/index.html"
+
+case "${1:-}" in
+  --list)     exec "$PREFIX/build.py" --list ;;
+  --check)    shift; [ $# -ge 1 ] || die "--check needs a URL"; exec "$PREFIX/build.py" --check "$1" ;;
+  --update)   as_root "$@"; exec "$PREFIX/install.sh" --update ;;
+  --sync)     as_root "$@"; exec "$PREFIX/install.sh" --sync ;;
+  --release)  as_root "$@"; exec "$PREFIX/install.sh" --release ;;
+  --version)  cat "$PREFIX/VERSION" ;;
+
+  --status)
+    port=$(value '["filter"]["port"]'); port=${port:-8791}
+    "$GUARD" status || true
+    printf '  %-12s %s\n' "clone" "$(sed -n 's/^Version=//p' "$PREFIX/lib/firefox/application.ini" 2>/dev/null | head -1)"
+    if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+      for unit in filter sync.timer home; do
+        state=$(systemctl is-active "scripture-browser-$unit.service" 2>/dev/null || true)
+        case "$unit" in sync.timer) state=$(systemctl is-active scripture-browser-sync.timer 2>/dev/null || true) ;; esac
+        printf '  %-12s %s\n' "$unit" "${state:-absent}"
+      done
+    fi
+    if command -v ss >/dev/null 2>&1; then
+      if ss -ltn 2>/dev/null | grep -q "127.0.0.1:$port"; then
+        printf '  %-12s listening on 127.0.0.1:%s\n' "filter" "$port"
+      else
+        printf '  %-12s NOT LISTENING on 127.0.0.1:%s — the browser will reach nothing\n' \
+               "filter" "$port"
+      fi
+    fi
+    ;;
+
+  --add)
+    shift; [ $# -ge 1 ] || die "--add needs a domain, e.g. scripture-browser --add example.com"
+    as_root "$@"
+    domain=$(printf '%s' "$1" | tr 'A-Z' 'a-z' | sed 's#^[a-z]*://##; s#/.*##; s/:.*//')
+    title=${2:-}
+    [ -n "$title" ] || title=$domain
+    [ -f "$PREFIX/allowlist.txt" ] || die "no allowlist at $PREFIX/allowlist.txt"
+    if grep -qE "^[[:space:]]*${domain}[[:space:]]*(#|$)" "$PREFIX/allowlist.txt"; then
+      die "$domain is already on the list"
+    fi
+    # This list is for Scripture and Christian study.  build.py holds the
+    # off-limits list, so it decides — and a hand edit of allowlist.txt still
+    # works, deliberately, because the list is meant to be yours.
+    if ! "$PREFIX/build.py" --check-add "$domain" >/dev/null 2>&1; then
+      "$PREFIX/build.py" --check-add "$domain" || true
+      die "not adding it"
+    fi
+    if [ -x "$GUARD" ]; then "$GUARD" unfreeze >/dev/null 2>&1 || true; fi
+    printf '%-28s# %s\n' "$domain" "$title" >> "$PREFIX/allowlist.txt"
+    say "added $domain"
+    "$PREFIX/install.sh" --update
+    say "the filter re-read the list by itself; no restart needed"
+    ;;
+
+  --remove)
+    shift; [ $# -ge 1 ] || die "--remove needs a domain"
+    as_root "$@"
+    domain=$(printf '%s' "$1" | tr 'A-Z' 'a-z' | sed 's#^[a-z]*://##; s#/.*##; s/:.*//')
+    grep -qE "^[[:space:]]*${domain}[[:space:]]*(#|$)" "$PREFIX/allowlist.txt" \
+      || die "$domain is not on the list"
+    if [ -x "$GUARD" ]; then "$GUARD" unfreeze >/dev/null 2>&1 || true; fi
+    tmp=$(mktemp)
+    grep -vE "^[[:space:]]*${domain}[[:space:]]*(#|$)" "$PREFIX/allowlist.txt" > "$tmp"
+    cat "$tmp" > "$PREFIX/allowlist.txt"
+    rm -f "$tmp"
+    say "removed $domain"
+    "$PREFIX/install.sh" --update
+    ;;
+
+  --serve)
+    shift
+    case "${1:-}" in
+      on)  as_root "$@"; exec "$PREFIX/install.sh" --home-server ;;
+      off) as_root "$@"; exec "$PREFIX/install.sh" --home-server-off ;;
+      *)   die "--serve takes on or off" ;;
+    esac
+    ;;
+
+  --install-user)
+    command -v xdg-settings >/dev/null || die "xdg-settings is not installed"
+    xdg-settings set default-web-browser scripture-browser.desktop || true
+    if command -v xdg-mime >/dev/null; then
+      xdg-mime default scripture-browser.desktop \
+        x-scheme-handler/http x-scheme-handler/https text/html 2>/dev/null || true
+    fi
+    say "this account now opens links in Scripture Browser"
+    say "  (if a link still opens elsewhere, log out and back in)"
+    ;;
+
+  --help|-h)
+    sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
+    ;;
+
+  -*)
+    die "unknown option: $1  (try --help)"
+    ;;
+
+  *)
+    # Opening the browser.  No flag Firefox does not know: its window class comes
+    # from the clone's own application.ini (RemotingName=scripture-browser), which
+    # is what the desktop entry groups the window by.
+    [ "$(id -u)" -ne 0 ] || die "run this as your own user, not as root"
+    [ -x "$BROWSER" ] || die "the clone is missing: $BROWSER — run: sudo $PREFIX/install.sh"
+    mkdir -p "$PROFILE"
+    if [ "${1:-}" = "--kiosk" ]; then
+      shift
+      exec "$BROWSER" --profile "$PROFILE" --kiosk "$HOME_URL" "$@"
+    fi
+    exec "$BROWSER" --profile "$PROFILE" "$HOME_URL" "$@"
+    ;;
+esac

@@ -1,0 +1,15 @@
+[Unit]
+Description=Scripture Browser — check the locks every few minutes
+Documentation=file:__PREFIX__/README.md
+
+[Timer]
+# The path unit catches a file being edited.  This catches a file being deleted,
+# a mount arriving late, and anything that changed while the machine was off.
+OnBootSec=90s
+OnUnitActiveSec=2min
+AccuracySec=15s
+Persistent=true
+Unit=scripture-browser-guard.service
+
+[Install]
+WantedBy=timers.target

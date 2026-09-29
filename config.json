@@ -1,0 +1,44 @@
+{
+  "name": "Scripture Browser",
+  "version": "2.0.0",
+  "install_prefix": "/opt/scripture-browser",
+
+  "search": {
+    "name": "BibleGateway (KJV)",
+    "alias": "bible",
+    "url": "https://www.biblegateway.com/quicksearch/?quicksearch={q}&version=KJV"
+  },
+
+  "address_bar_search": false,
+
+  "home": {
+    "verse_of_the_day": true,
+    "clock": true,
+    "links": true
+  },
+
+  "firefox": {
+    "autoconfig": true,
+    "clone": true,
+    "sync": true
+  },
+
+  "filter": {
+    "enabled": true,
+    "bind": "127.0.0.1",
+    "port": 8791
+  },
+
+  "guard": {
+    "enabled": true,
+    "interval_minutes": 2,
+    "immutable": true,
+    "restore": true
+  },
+
+  "dns": {
+    "enabled": false,
+    "upstream": ["1.1.1.1", "9.9.9.9"],
+    "listen": "127.0.0.1"
+  }
+}

@@ -1,0 +1,16 @@
+[Unit]
+Description=Scripture Browser — check the clone against the machine's Firefox
+Documentation=file:__PREFIX__/README.md
+
+[Timer]
+# A clone cannot update itself, so this is how a security update reaches it: the
+# package manager patches the machine's Firefox, and within half an hour the
+# clone is re-vendored from it.  The check is two greps, so it costs nothing.
+OnBootSec=3min
+OnUnitActiveSec=30min
+AccuracySec=1min
+Persistent=true
+Unit=scripture-browser-sync.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=Scripture Browser — notice the machine's Firefox being replaced
+Documentation=file:__PREFIX__/README.md
+
+[Path]
+# The package manager replaces these when it upgrades Firefox.  On a machine
+# where Firefox lives somewhere else these simply never fire, and the timer
+# below is what notices.
+PathChanged=__FIREFOX_DIR__/application.ini
+PathChanged=__FIREFOX_DIR__/platform.ini
+
+Unit=scripture-browser-sync.service
+
+[Install]
+WantedBy=paths.target

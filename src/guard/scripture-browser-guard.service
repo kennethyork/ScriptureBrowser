@@ -1,0 +1,12 @@
+[Unit]
+Description=Scripture Browser — put the locks back
+Documentation=file:__PREFIX__/README.md
+After=local-fs.target
+ConditionPathExists=/usr/local/lib/scripture-browser-guard/MANIFEST
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/scripture-browser-guard/guard.sh restore
+# Restoring a file is not urgent; being kind to the machine is.
+Nice=10
+IOSchedulingClass=idle

@@ -1,0 +1,32 @@
+[Unit]
+Description=Scripture Browser — the start page on loopback
+Documentation=file:__PREFIX__/README.md
+After=network.target
+ConditionPathExists=__PREFIX__/home/index.html
+
+[Service]
+Type=simple
+ExecStart=__PREFIX__/home/serve.py --root __PREFIX__/home --port 8787
+Restart=on-failure
+RestartSec=2
+
+# It serves one directory and talks to nobody.
+DynamicUser=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=yes
+MemoryDenyWriteExecute=yes
+ReadOnlyPaths=__PREFIX__/home
+
+# Only the machine itself may connect.
+IPAddressDeny=any
+IPAddressAllow=localhost
+
+[Install]
+WantedBy=multi-user.target
